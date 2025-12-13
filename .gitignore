@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# VSCode
+.vscode/
+
+# Pytest
+.pytest_cache/
+
+# Environment files
+.env
+.env.*
+
+# Alembic
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# Debug/Temp
+*.log
+tmp_debug_*.py
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Ignore test DBs
+*.sqlite3
+
+# Ignore poetry lock if not used
+poetry.lock
+
+# Ignore compiled migrations
+migrations/*.pyc
+
+# Ignore backup files
+*~
+
+# Ignore test output
+coverage/
+
+# Ignore local dev files
+*.local
+
+# Ignore Jupyter
+*.ipynb_checkpoints/
+
+# Ignore other IDEs
+.idea/
