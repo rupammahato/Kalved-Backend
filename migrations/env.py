@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 from app.core.config import settings
 from app.core.database import Base
 
-from app.models import user, doctor, patient, clinic, session, admin, audit, document  # noqa: F401
+from app.models import user, doctor, patient, clinic, session, admin, audit, document, appointment, chat, prescription, review, notification, analytics  # noqa: F401
 
 config = context.config
 

@@ -47,7 +47,7 @@ class NotificationPreferences(Base):
     message_notifications = Column(Boolean, default=True)
     
     email_enabled = Column(Boolean, default=True)
-    sms_enabled = Column(Boolean, default=False)
+    sms_enabled = Column(Boolean, default=True)
     push_enabled = Column(Boolean, default=True)
     
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
