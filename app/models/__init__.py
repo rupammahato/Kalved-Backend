@@ -10,4 +10,10 @@ __all__ = [
     "session",
     "audit",
     "document",
+    "appointment",
+    "chat",
+    "prescription",
+    "review",
+    "notification",
+    "analytics",
 ]
