@@ -18,3 +18,4 @@ httpx==0.25.2
 aiofiles==23.2.1
 pyotp==2.9.0
 requests==2.31.0
+twilio==8.10.3

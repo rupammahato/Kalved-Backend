@@ -11,6 +11,7 @@ from app.core.security import (
 )
 from app.core.config import settings
 from app.services import email_service
+from app.services import sms_service
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from app.utils.errors import (
@@ -34,6 +35,7 @@ class AuthService:
         first_name: str,
         last_name: str,
         user_type: str,  # 'doctor' or 'patient'
+        notification_channel: str = "email",  # email | sms | both
     ) -> dict:
         """
         Step 1: Register user and send OTP
@@ -75,21 +77,27 @@ class AuthService:
         db.commit()
         db.refresh(new_user)
         
-        # Send OTP via email
+        # Send OTP via selected channel(s)
         try:
-            email_service.send_otp_email(email, f"{first_name} {last_name}", otp_code)
+            AuthService._send_otp_notifications(
+                email=email,
+                phone=phone,
+                recipient_name=f"{first_name} {last_name}".strip(),
+                otp_code=otp_code,
+                channel=notification_channel,
+            )
         except Exception as e:
-            logger.error("Failed to send OTP email", exc_info=e)
+            logger.error("Failed to send OTP notification", exc_info=e)
             raise Exception("Failed to send OTP. Please try again.")
         
         return {
             "user_id": new_user.id,
             "email": email,
-            "message": "OTP sent to email. Please verify within 10 minutes."
+            "message": "OTP sent. Please verify within 10 minutes."
         }
     
     @staticmethod
-    def verify_otp(db: Session, email: str, otp_code: str) -> dict:
+    def verify_otp(db: Session, email: str | None, otp_code: str, phone: str | None = None) -> dict:
         """
         Step 2: Verify OTP and confirm email
         - Validate OTP
@@ -97,7 +105,12 @@ class AuthService:
         - Create doctor/patient profile based on user_type
         """
         
-        user = db.query(User).filter(User.email == email).first()
+        query = db.query(User)
+        user = None
+        if email:
+            user = query.filter(User.email == email).first()
+        if not user and phone:
+            user = query.filter(User.phone == phone).first()
         if not user:
             raise UserNotFoundError("User not found")
         
@@ -156,10 +169,15 @@ class AuthService:
         }
     
     @staticmethod
-    def resend_otp(db: Session, email: str) -> dict:
-        """Resend OTP to email"""
+    def resend_otp(db: Session, email: str | None, phone: str | None, channel: str = "email") -> dict:
+        """Resend OTP to chosen channel"""
         
-        user = db.query(User).filter(User.email == email).first()
+        user_query = db.query(User)
+        user = None
+        if email:
+            user = user_query.filter(User.email == email).first()
+        if not user and phone:
+            user = user_query.filter(User.phone == phone).first()
         if not user:
             raise UserNotFoundError("User not found")
         
@@ -181,12 +199,18 @@ class AuthService:
         
         # Send OTP
         try:
-            email_service.send_otp_email(email, f"{user.first_name} {user.last_name}", otp_code)
+            AuthService._send_otp_notifications(
+                email=user.email,
+                phone=user.phone,
+                recipient_name=f"{user.first_name} {user.last_name}".strip(),
+                otp_code=otp_code,
+                channel=channel,
+            )
         except Exception as e:
-            logger.error("Failed to send OTP email", exc_info=e)
+            logger.error("Failed to send OTP notification", exc_info=e)
             raise Exception("Failed to send OTP. Please try again.")
         
-        return {"message": "OTP resent to email"}
+        return {"message": "OTP resent"}
     
     @staticmethod
     def login(db: Session, email: str, password: str, ip_address: str, user_agent: str = "") -> dict:
@@ -492,3 +516,36 @@ class AuthService:
         db.commit()
 
         return {"message": "Password updated successfully"}
+
+    @staticmethod
+    def _send_otp_notifications(
+        email: str | None,
+        phone: str | None,
+        recipient_name: str,
+        otp_code: str,
+        channel: str,
+    ) -> None:
+        """Dispatch OTP to configured channels."""
+        errors = []
+
+        if channel in ("email", "both"):
+            if not email:
+                errors.append("Email missing for email channel")
+            else:
+                try:
+                    email_service.send_otp_email(email, recipient_name, otp_code)
+                except Exception as exc:
+                    errors.append(str(exc))
+
+        if channel in ("sms", "both"):
+            if not phone:
+                errors.append("Phone missing for sms channel")
+            else:
+                try:
+                    sms_service.send_otp_sms(phone, otp_code)
+                except Exception as exc:
+                    errors.append(str(exc))
+
+        if errors:
+            # If any channel failed, surface combined errors
+            raise Exception("; ".join(errors))

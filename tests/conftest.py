@@ -58,22 +58,18 @@ def db_session(prepare_database):
 @pytest.fixture(scope="session")
 def patch_email_helpers(load_test_env):
     """Patch email sending helpers so tests don't attempt SMTP connections."""
-    # Import and patch the functions used by the app
     import app.services.email_service as email_service
 
-    # keep originals to restore if needed
     original_send_otp = getattr(email_service, "send_otp_email", None)
     original_send_password = getattr(email_service, "send_password_reset_email", None)
     original_send_email = getattr(email_service, "send_email", None)
 
-    # Replace with no-op implementations
     email_service.send_otp_email = lambda *a, **k: True
     email_service.send_password_reset_email = lambda *a, **k: True
     email_service.send_email = lambda *a, **k: True
 
     yield
 
-    # restore
     if original_send_otp is not None:
         email_service.send_otp_email = original_send_otp
     if original_send_password is not None:
@@ -82,8 +78,27 @@ def patch_email_helpers(load_test_env):
         email_service.send_email = original_send_email
 
 
+@pytest.fixture(scope="session")
+def patch_sms_helpers(load_test_env):
+    """Patch SMS sending helpers so tests don't hit Twilio."""
+    import app.services.sms_service as sms_service
+
+    original_send_otp_sms = getattr(sms_service, "send_otp_sms", None)
+    original_send_sms = getattr(sms_service, "send_sms", None)
+
+    sms_service.send_otp_sms = lambda *a, **k: True
+    sms_service.send_sms = lambda *a, **k: True
+
+    yield
+
+    if original_send_otp_sms is not None:
+        sms_service.send_otp_sms = original_send_otp_sms
+    if original_send_sms is not None:
+        sms_service.send_sms = original_send_sms
+
+
 @pytest.fixture
-async def async_client(patch_email_helpers, prepare_database):
+async def async_client(patch_email_helpers, patch_sms_helpers, prepare_database):
     """Provide an httpx AsyncClient configured with the FastAPI app."""
     from httpx import AsyncClient
     from app.main import create_app

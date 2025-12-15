@@ -19,6 +19,7 @@ async def test_register_verify_login_refresh_logout(async_client, db_session):
         "first_name": "Test",
         "last_name": "User",
         "user_type": "patient",
+        "notification_channel": "email",
     }
 
     r = await async_client.post("/auth/register", json=payload)
@@ -181,6 +182,138 @@ async def test_verify_otp_expired(async_client, db_session):
 
     r = await async_client.post("/auth/verify-otp", json={"email": email, "otp_code": user.otp_code})
     assert r.status_code == 400
+
+
+async def test_send_otp_sms_channel_requires_phone(async_client):
+    payload = {"email": "sms-missing-phone@example.com", "channel": "sms"}
+    r = await async_client.post("/auth/send-otp", json=payload)
+    # Pydantic validation should fail with missing phone for sms channel
+    assert r.status_code == 422
+
+
+async def test_register_with_sms_channel_and_verify_by_phone(async_client, db_session):
+    phone = "+15550001111"
+    payload = {
+        "email": f"sms-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": phone,
+        "password": "StrongPassw0rd!",
+        "first_name": "Sms",
+        "last_name": "User",
+        "user_type": "patient",
+        "notification_channel": "sms",
+    }
+
+    r = await async_client.post("/auth/register", json=payload)
+    assert r.status_code == 201
+    body = r.json()
+    assert body.get("success") is True
+
+    from app.models.user import User
+    user = db_session.query(User).filter(User.email == payload["email"]).first()
+    assert user is not None
+    assert user.otp_code
+
+    # Verify via phone (no email needed)
+    r = await async_client.post("/auth/verify-otp", json={"phone": phone, "otp_code": user.otp_code})
+    assert r.status_code == 200
+    assert r.json().get("success") is True
+
+
+async def test_resend_otp_via_sms_channel(async_client, db_session):
+    phone = "+15550002222"
+    payload = {
+        "email": f"sms-resend-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": phone,
+        "password": "StrongPassw0rd!",
+        "first_name": "Resend",
+        "last_name": "Sms",
+        "user_type": "patient",
+        "notification_channel": "sms",
+    }
+
+    r = await async_client.post("/auth/register", json=payload)
+    assert r.status_code == 201
+
+    r = await async_client.post("/auth/resend-otp", json={"phone": phone, "channel": "sms"})
+    assert r.status_code == 200
+    assert r.json().get("success") is True
+
+
+async def test_register_sms_send_failure_returns_400(async_client, monkeypatch):
+    """If SMS sending fails (Twilio), registration should return 400."""
+    # Simulate Twilio failure
+    def _fail(*a, **k):
+        raise Exception("Twilio service error")
+
+    monkeypatch.setattr("app.services.sms_service.send_otp_sms", _fail)
+
+    payload = {
+        "email": f"smsfail-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": "+15559990000",
+        "password": "StrongPassw0rd!",
+        "first_name": "Sms",
+        "last_name": "Fail",
+        "user_type": "patient",
+        "notification_channel": "sms",
+    }
+
+    r = await async_client.post("/auth/register", json=payload)
+    assert r.status_code == 400
+    body = r.json()
+    assert "Failed to send OTP" in body.get("detail", "")
+
+
+async def test_resend_sms_failure_returns_400(async_client, db_session, monkeypatch):
+    """Resend OTP should surface SMS send failures as 400."""
+    phone = "+15558880000"
+    payload = {
+        "email": f"resendfail-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": phone,
+        "password": "StrongPassw0rd!",
+        "first_name": "Resend",
+        "last_name": "Fail",
+        "user_type": "patient",
+        "notification_channel": "sms",
+    }
+
+    # Register normally (patched sms helper from conftest returns True by default)
+    r = await async_client.post("/auth/register", json=payload)
+    assert r.status_code == 201
+
+    # Now make sms sending fail on resend
+    def _fail(*a, **k):
+        raise Exception("Twilio down")
+
+    monkeypatch.setattr("app.services.sms_service.send_otp_sms", _fail)
+
+    r = await async_client.post("/auth/resend-otp", json={"phone": phone, "channel": "sms"})
+    assert r.status_code == 400
+    assert "Failed to send OTP" in r.json().get("detail", "")
+
+
+async def test_register_both_channel_partial_failure(async_client, monkeypatch):
+    """When channel is both and one channel fails, registration should error."""
+    # email will succeed, sms will fail
+    monkeypatch.setattr("app.services.email_service.send_otp_email", lambda *a, **k: True)
+
+    def _fail(*a, **k):
+        raise Exception("SMS provider error")
+
+    monkeypatch.setattr("app.services.sms_service.send_otp_sms", _fail)
+
+    payload = {
+        "email": f"bothfail-{uuid.uuid4().hex[:8]}@example.com",
+        "phone": "+15557770000",
+        "password": "StrongPassw0rd!",
+        "first_name": "Both",
+        "last_name": "Fail",
+        "user_type": "patient",
+        "notification_channel": "both",
+    }
+
+    r = await async_client.post("/auth/register", json=payload)
+    assert r.status_code == 400
+    assert "Failed to send OTP" in r.json().get("detail", "")
 
 
 async def test_forgot_password_unknown_email_is_ok(async_client):

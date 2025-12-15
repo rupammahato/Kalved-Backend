@@ -59,5 +59,10 @@ class Settings:
     # Role-based Access
     DOCTOR_APPROVAL_REQUIRED: bool = (os.getenv("DOCTOR_APPROVAL_REQUIRED", "True").lower() == "true")
 
+    # SMS (Twilio)
+    TWILIO_ACCOUNT_SID: Optional[str] = os.getenv("TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN: Optional[str] = os.getenv("TWILIO_AUTH_TOKEN")
+    TWILIO_FROM_NUMBER: Optional[str] = os.getenv("TWILIO_FROM_NUMBER")
+
 
 settings = Settings()

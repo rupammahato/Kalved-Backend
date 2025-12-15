@@ -4,14 +4,35 @@ from datetime import datetime
 
 
 class OTPSendRequest(BaseModel):
-    """Request to send OTP to email"""
-    email: EmailStr
+    """Request to send OTP to email/phone"""
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, min_length=0, max_length=20)
+    channel: str = Field("email", pattern="^(email|sms|both)$")
+
+    @field_validator("channel")
+    def validate_channel(cls, v, info):
+        data = info.data if info and info.data else {}
+        email = data.get("email")
+        phone = data.get("phone")
+        if v in ("email", "both") and not email:
+            raise ValueError("email is required when channel is email/both")
+        if v in ("sms", "both") and not phone:
+            raise ValueError("phone is required when channel is sms/both")
+        return v
 
 
 class OTPVerifyRequest(BaseModel):
     """Request to verify OTP"""
-    email: EmailStr
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, min_length=0, max_length=20)
     otp_code: str = Field(..., min_length=6, max_length=6)
+
+    @field_validator("otp_code")
+    def require_contact(cls, v, info):
+        data = info.data if info and info.data else {}
+        if not data.get("email") and not data.get("phone"):
+            raise ValueError("email or phone is required")
+        return v
 
 
 class EmailRegisterRequest(BaseModel):
@@ -22,6 +43,7 @@ class EmailRegisterRequest(BaseModel):
     first_name: str = Field(..., min_length=2)
     last_name: str = Field(..., min_length=2)
     user_type: str = Field(..., pattern="^(doctor|patient)$")
+    notification_channel: str = Field("email", pattern="^(email|sms|both)$")
     
     @field_validator('password')
     def password_strength(cls, v):
@@ -35,6 +57,14 @@ class EmailRegisterRequest(BaseModel):
             raise ValueError('Password must contain digit')
         if not re.search(r'[!@#$%^&*]', v):
             raise ValueError('Password must contain special character')
+        return v
+
+    @field_validator("notification_channel")
+    def validate_channel(cls, v, info):
+        data = info.data if info and info.data else {}
+        phone = data.get("phone")
+        if v in ("sms", "both") and not phone:
+            raise ValueError("phone is required when notification_channel is sms/both")
         return v
 
 class LoginRequest(BaseModel):

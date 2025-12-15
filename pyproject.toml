@@ -26,7 +26,8 @@ dependencies = [
     "aiofiles (==23.2.1)",
     "pyotp (==2.9.0)"
     ,"requests (==2.31.0)",
-    "argon2-cffi (>=25.1.0,<26.0.0)"
+    "argon2-cffi (>=25.1.0,<26.0.0)",
+    "twilio (>=9.8.8,<10.0.0)"
 ]
 
 packages = [

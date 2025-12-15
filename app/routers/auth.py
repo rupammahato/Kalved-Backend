@@ -32,12 +32,13 @@ async def send_otp(
     try:
         result = AuthService.register_with_email(
             db=db,
-            email=request.email,
-            phone="",
+            email=request.email or "",
+            phone=request.phone or "",
             password="",
             first_name="",
             last_name="",
             user_type="",
+            notification_channel=request.channel,
         )
         return {
             "success": True,
@@ -69,6 +70,7 @@ async def register(
             first_name=request.first_name,
             last_name=request.last_name,
             user_type=request.user_type,
+            notification_channel=request.notification_channel,
         )
         return {
             "success": True,
@@ -126,6 +128,7 @@ async def verify_otp(
             db=db,
             email=request.email,
             otp_code=request.otp_code,
+            phone=request.phone,
         )
         return {
             "success": True,
@@ -142,9 +145,14 @@ async def resend_otp(
     db: Session = Depends(get_db),
     _: None = Depends(rate_limit),
 ):
-    """Resend OTP to email"""
+    """Resend OTP to chosen channel"""
     try:
-        result = AuthService.resend_otp(db=db, email=request.email)
+        result = AuthService.resend_otp(
+            db=db,
+            email=request.email,
+            phone=request.phone,
+            channel=request.channel,
+        )
         return {
             "success": True,
             "data": result,

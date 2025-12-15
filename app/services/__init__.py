@@ -7,6 +7,7 @@ __all__ = [
     "patient_service",
     "admin_service",
     "email_service",
+    "sms_service",
     "oauth_service",
     "document_service",
 ]
