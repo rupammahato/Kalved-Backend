@@ -74,7 +74,7 @@ class Prescription(Base):
     
     doctor = relationship("Doctor")
     patient = relationship("Patient")
-    appointment = relationship("Appointment")
+    appointment = relationship("Appointment", foreign_keys=[appointment_id])
     items = relationship("PrescriptionItem", back_populates="prescription")
 
 class PrescriptionItem(Base):

@@ -5,6 +5,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings:
+    ENV: str = os.getenv("ENV", "local")
+    STORAGE_BACKEND: str = os.getenv("STORAGE_BACKEND", "local")
+    EMAIL_BACKEND: str = os.getenv("EMAIL_BACKEND", "console")
+    SMS_BACKEND: str = os.getenv("SMS_BACKEND", "console")
+
     # Database
     DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
     DATABASE_ECHO: bool = os.getenv("DATABASE_ECHO", "False").lower() == "true"

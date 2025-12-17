@@ -1,123 +1,65 @@
-# Kalved Backend (Auth API)
+# Kalved Backend
 
-Scaffold for authentication API using FastAPI, SQLAlchemy, JWT, and Google OAuth.
+FastAPI backend for the Kalved healthcare platform.
 
-Structure includes placeholders for models, schemas, routers, services, middleware and tests.
+## Prerequisites
 
-This README lists common commands to start, configure, and test the application locally.
+- Python 3.11+
+- [Poetry](https://python-poetry.org/docs/#installation)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- PostgreSQL 14+
 
-1) Using Poetry (recommended)
-
-- Create the virtual environment and install dependencies:
+## Quick Start
 
 ```bash
+# Install dependencies
 poetry install
-```
 
-- Activate the virtual environment (Windows cmd):
-
-```bash
-poetry shell
-```
-
-- Run the development server:
-
-```bash
-poetry run uvicorn app.main:app --reload
-```
-
-- Run tests:
-
-```bash
-poetry run pytest -q
-```
-
-2) Using the bundled venv (if `.venv` exists)
-
-- Install dependencies into the in-project virtualenv (Windows):
-
-```bash
-.venv\Scripts\pip.exe install -r requirements.txt
-```
-
-- Start the server using the venv Python:
-
-```bash
-.venv\Scripts\uvicorn.exe app.main:app --reload
-```
-
-3) Using pip / global venv
-
-- Create a virtual environment and install requirements:
-
-```bash
-python -m venv .venv
-.venv\Scripts\pip.exe install -r requirements.txt
-```
-
-4) Docker (compose)
-
-- Build and run using Docker Compose:
-
-```bash
-docker-compose up --build
-```
-
-5) Environment variables
-
-- Copy the example `.env` and update secret values:
-
-```bash
+# Configure environment
 copy .env.example .env
-# Then edit .env and set SECRET_KEY, DATABASE_URL, SMTP credentials, etc.
+# Edit .env with your database credentials and secrets
+
+# Start Redis (requires Docker Desktop running)
+docker-compose up -d redis
+
+# Run migrations
+poetry run migrate
+
+# Start server
+poetry run runserver
 ```
 
-- To generate a secure `SECRET_KEY` (Python):
+API: http://localhost:8000 | Docs: http://localhost:8000/docs
+
+
+## Docker Services
 
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
+docker-compose up -d redis      # Start Redis only (recommended)
+docker-compose up -d            # Start all services
+docker-compose down             # Stop all services
 ```
 
-6) Database migrations (Alembic)
-
-- Create a new revision (autogenerate if models are importable):
+## Development Commands
 
 ```bash
-alembic revision --autogenerate -m "describe change"
+poetry run runserver    # Start dev server
+poetry run migrate      # Apply migrations
+poetry run run-tests    # Run tests
 ```
 
-- Apply migrations:
+## Troubleshooting
 
-```bash
-alembic upgrade head
-```
+| Issue | Solution |
+|-------|----------|
+| Redis connection failed | Ensure Docker Desktop is running, then `docker-compose up -d redis` |
+| Port 6379 already in use | `docker stop kalved-redis && docker rm kalved-redis` |
+| Docker commands fail | Start Docker Desktop and wait for it to initialize |
 
-7) Quick checks
+## License
 
-- Verify the app package imports (useful after dependency changes):
+**Proprietary - All Rights Reserved**
 
-```bash
-poetry run python -c "import app; print('app import OK')"
-```
+Copyright © 2025 Kalved. All rights reserved.
 
-8) Common troubleshooting
-
-- If you see "DATABASE_URL is not configured", set `DATABASE_URL` in `.env` or environment.
-- If `requests` is missing for Google auth, install it:
-
-```bash
-poetry add requests
-# or
-.venv\Scripts\pip.exe install requests
-```
-
-9) Development helpers (Poetry scripts)
-
-- The project includes convenience scripts in `pyproject.toml`:
-
-```bash
-poetry run runserver   # shorthand for app.cli:runserver
-poetry run run-tests   # shorthand for app.cli:run_tests
-poetry run migrate     # shorthand for app.cli:run_migrations
-poetry run init-env    # shorthand for app.cli:init_env
-```
+This software is the confidential and proprietary property of Kalved. Unauthorized copying, distribution, modification, or use of this software is strictly prohibited.

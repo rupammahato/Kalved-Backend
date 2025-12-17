@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import HTTPException as FastAPIHTTPException
 
 from app.core.logger import setup_logging
@@ -48,6 +49,9 @@ def create_app() -> FastAPI:
         description=description,
         openapi_tags=openapi_tags,
     )
+    
+    # Mount static files for local uploads
+    app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
     # Middleware
     configure_cors(app)

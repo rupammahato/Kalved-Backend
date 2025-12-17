@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 def send_email(to_email: str, subject: str, body: str, html: str | None = None) -> bool:
+    if settings.EMAIL_BACKEND == "console":
+        logger.info(f"[EMAIL] to={to_email} subject={subject}\n{html or body}")
+        return True
+
     smtp_host = settings.SMTP_HOST
     smtp_port = settings.SMTP_PORT
     smtp_user = settings.SMTP_USER

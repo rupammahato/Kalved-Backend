@@ -138,7 +138,7 @@ def send_appointment_confirmation(appointment_id: int):
                 doctor_name=appt.doctor.user.first_name,
                 appointment_date=str(appt.appointment_date),
                 appointment_time=str(appt.appointment_time),
-                clinic_name=appt.clinic.clinic_name,
+                clinic_name=appt.clinic.name,
                 is_final_reminder=False, # Reusing template
             )
         except Exception as e:
@@ -147,7 +147,7 @@ def send_appointment_confirmation(appointment_id: int):
         # 2) SMS to patient
         if appt.patient.user.phone:
             sms_body = (
-                f"Appt booked with Dr {appt.doctor.user.first_name} at {appt.clinic.clinic_name} "
+                f"Appt booked with Dr {appt.doctor.user.first_name} at {appt.clinic.name} "
                 f"on {appt.appointment_date} at {appt.appointment_time}. "
                 f"Please confirm in the app."
             )

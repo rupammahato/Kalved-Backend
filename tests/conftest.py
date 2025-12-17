@@ -32,15 +32,34 @@ def prepare_database(load_test_env):
     """Create clean schema for the test session."""
     # Import here after env is loaded so settings pick up .env.test
     from app.core.database import engine, Base, SessionLocal
+    
+    # Import ALL models so Base.metadata has the full graph
+    from app.models import (
+        user, doctor, patient, admin, clinic, session, audit, 
+        document, appointment, chat, prescription, review, 
+        notification, analytics
+    )
+    
+    # Helper to drop all tables using raw SQL with CASCADE
+    def drop_all_tables():
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            # Disable FK checks temporarily by using CASCADE
+            for table in reversed(Base.metadata.sorted_tables):
+                try:
+                    conn.execute(text(f'DROP TABLE IF EXISTS "{table.name}" CASCADE'))
+                except Exception:
+                    pass
+            conn.commit()
 
     # Drop / create all tables to ensure clean DB
-    Base.metadata.drop_all(bind=engine)
+    drop_all_tables()
     Base.metadata.create_all(bind=engine)
 
     yield
 
     # Teardown: drop all tables
-    Base.metadata.drop_all(bind=engine)
+    drop_all_tables()
 
 
 @pytest.fixture

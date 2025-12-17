@@ -90,7 +90,7 @@ class Appointment(Base):
     doctor = relationship("Doctor")
     clinic = relationship("Clinic")
     slot = relationship("AppointmentSlot", back_populates="appointments")
-    prescription = relationship("Prescription", uselist=False)
+    prescription = relationship("Prescription", foreign_keys=[prescription_id], uselist=False)
     chat_room = relationship("ChatRoom", uselist=False)
 
 class AppointmentCancellation(Base):

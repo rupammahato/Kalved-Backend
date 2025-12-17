@@ -28,6 +28,10 @@ def send_sms_message(
     Send a transactional SMS.
     Returns True if successful, False otherwise.
     """
+    if settings.SMS_BACKEND == "console":
+        logger.info(f"[SMS] to={to_number}: {body}")
+        return True
+
     account_sid = getattr(settings, "TWILIO_ACCOUNT_SID", None) or os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = getattr(settings, "TWILIO_AUTH_TOKEN", None) or os.getenv("TWILIO_AUTH_TOKEN")
     
