@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Boolean, Text, ARRAY, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, Date, Boolean, Text, ARRAY, ForeignKey, DateTime, Float
 from sqlalchemy.orm import relationship, foreign
 from datetime import datetime
 from app.core.database import Base
@@ -27,6 +27,10 @@ class Doctor(Base):
     
     # Consultation fee
     default_consultation_fee = Column(Integer, nullable=True)
+
+    # Ratings
+    average_rating = Column(Float, nullable=True)
+    total_reviews = Column(Integer, default=0)
     
     # Documents
     clinic_registration_certificate = Column(Text, nullable=True)

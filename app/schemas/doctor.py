@@ -61,6 +61,8 @@ class DoctorRead(BaseModel):
     specializations: Optional[List[str]]
     languages: Optional[List[str]]
     default_consultation_fee: Optional[int]
+    average_rating: Optional[float] = None
+    total_reviews: int = 0
     clinics: Optional[list] = None
     qualifications: Optional[list] = None
 

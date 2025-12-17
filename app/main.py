@@ -16,6 +16,7 @@ from app.routers import patients as patients_router
 from app.routers import admin as admin_router
 from app.routers import health as health_router
 from app.routers import appointments as appointments_router
+from app.routers import reviews as reviews_router
 
 
 def create_app() -> FastAPI:
@@ -34,6 +35,7 @@ def create_app() -> FastAPI:
         {"name": "admin", "description": "Administrative endpoints for approvals and audits."},
         {"name": "health", "description": "Health checks and service status endpoints."},
         {"name": "appointments", "description": "Appointment booking and management."},
+        {"name": "reviews", "description": "Doctor and clinic reviews, ratings and moderation."},
     ]
 
     app = FastAPI(
@@ -60,6 +62,7 @@ def create_app() -> FastAPI:
     app.include_router(patients_router.router)
     app.include_router(admin_router.router)
     app.include_router(appointments_router.router)
+    app.include_router(reviews_router.router)
 
     return app
 
