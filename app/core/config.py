@@ -12,7 +12,7 @@ class Settings:
 
     # Database
     DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
-    DATABASE_ECHO: bool = os.getenv("DATABASE_ECHO", "False").lower() == "true"
+    DATABASE_ECHO: bool = os.getenv("DATABASE_ECHO")
     DATABASE_POOL_SIZE: int = int(os.getenv("DATABASE_POOL_SIZE", 20))
     DATABASE_MAX_OVERFLOW: int = int(os.getenv("DATABASE_MAX_OVERFLOW", 10))
 
@@ -50,16 +50,10 @@ class Settings:
     AWS_ACCESS_KEY_ID: Optional[str] = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: Optional[str] = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-    # CORS
-    BACKEND_CORS_ORIGINS: Optional[str] = os.getenv("BACKEND_CORS_ORIGINS",)
-
     # Rate Limiting
     RATE_LIMIT_ENABLED: bool = os.getenv("RATE_LIMIT_ENABLED", "True").lower() == "true"
     RATE_LIMIT_REQUESTS: int = int(os.getenv("RATE_LIMIT_REQUESTS", 100))
     RATE_LIMIT_PERIOD_SECONDS: int = int(os.getenv("RATE_LIMIT_PERIOD_SECONDS", 60))
-
-    # Admin
-    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL")
 
     # Role-based Access
     DOCTOR_APPROVAL_REQUIRED: bool = (os.getenv("DOCTOR_APPROVAL_REQUIRED", "True").lower() == "true")

@@ -10,6 +10,7 @@ __pycache__/
 .venv/
 venv/
 ENV/
+.env.test
 
 # VSCode
 .vscode/
@@ -19,7 +20,8 @@ ENV/
 
 # Environment files
 .env
-.env.*
+.env.local
+!.env.example
 
 # Alembic
 migrations/__pycache__/
