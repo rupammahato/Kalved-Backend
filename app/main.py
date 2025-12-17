@@ -17,6 +17,8 @@ from app.routers import admin as admin_router
 from app.routers import health as health_router
 from app.routers import appointments as appointments_router
 from app.routers import reviews as reviews_router
+from app.routers import chat as chat_router
+from app.routers import chat_ws as chat_ws_router
 
 
 def create_app() -> FastAPI:
@@ -36,6 +38,7 @@ def create_app() -> FastAPI:
         {"name": "health", "description": "Health checks and service status endpoints."},
         {"name": "appointments", "description": "Appointment booking and management."},
         {"name": "reviews", "description": "Doctor and clinic reviews, ratings and moderation."},
+        {"name": "chats", "description": "Real-time chat and messaging."},
     ]
 
     app = FastAPI(
@@ -63,6 +66,8 @@ def create_app() -> FastAPI:
     app.include_router(admin_router.router)
     app.include_router(appointments_router.router)
     app.include_router(reviews_router.router)
+    app.include_router(chat_router.router)
+    app.include_router(chat_ws_router.router)
 
     return app
 

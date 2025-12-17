@@ -9,13 +9,13 @@ from app.models.session import UserSession
 
 security = HTTPBearer()
 
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db),
+def get_current_user_from_token(
+    token: str,
+    db: Session,
 ):
-    """Verify JWT token and return current user"""
-    
-    token = credentials.credentials
+    """
+    Verify JWT token string (for WebSockets) and return current user.
+    """
     payload = decode_token(token)
     
     if payload is None:
@@ -55,11 +55,17 @@ async def get_current_user(
             detail="User not found",
         )
     
-    # Return payload with jti for logout
     return {
         **payload,
         "jti": jti,
     }
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    """Verify JWT token and return current user"""
+    return get_current_user_from_token(credentials.credentials, db)
 
 async def get_current_doctor(
     current_user = Depends(get_current_user),
