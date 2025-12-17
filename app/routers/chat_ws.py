@@ -10,7 +10,7 @@ from app.services.presence_service import PresenceService
 from app.schemas.chat import ChatMessageCreate
 from app.models.chat import ChatRoom
 
-router = APIRouter(tags=["chat-ws"])
+router = APIRouter(prefix="/chat-ws", tags=["chat-ws"])
 
 # room_id -> set of websockets
 class ConnectionManager:

@@ -25,7 +25,7 @@ from app.services.chat_service import ChatService
 from app.services.storage_service import upload_chat_attachment
 from app.models.chat import ChatRoom
 
-router = APIRouter(prefix="/chats", tags=["chat"])
+router = APIRouter(prefix="/chats", tags=["chats"])
 
 
 @router.get("/", response_model=list[ChatRoomResponse])

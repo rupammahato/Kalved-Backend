@@ -35,10 +35,11 @@ def create_app() -> FastAPI:
         {"name": "doctors", "description": "Doctor profiles, qualifications and admin approvals."},
         {"name": "patients", "description": "Patient records and interactions."},
         {"name": "admin", "description": "Administrative endpoints for approvals and audits."},
-        {"name": "health", "description": "Health checks and service status endpoints."},
         {"name": "appointments", "description": "Appointment booking and management."},
         {"name": "reviews", "description": "Doctor and clinic reviews, ratings and moderation."},
-        {"name": "chats", "description": "Real-time chat and messaging."},
+        {"name": "chats", "description": "Real-time chat and messaging (REST)."},
+        {"name": "chat-ws", "description": "Real-time chat WebSockets."},
+        {"name": "health", "description": "Health checks and service status endpoints."},
     ]
 
     app = FastAPI(
